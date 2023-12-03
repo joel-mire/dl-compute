@@ -19,7 +19,7 @@ class BasicDlComputeStack(Stack):
             # If updating either the instance type or AMI, check the AMI documentation to verify that the AMI is
             # compatible with the instance type
             instance_type=ec2.InstanceType('g4dn.xlarge'),
-            machine_image=ec2.MachineImage.lookup(name='ami-0aa5328ffcf5d34ac'),
+            machine_image=ec2.MachineImage.lookup(name='Deep Learning AMI GPU PyTorch 2.1.0 (Ubuntu 20.04) 20231103'),
             vpc=vpc,
             instance_name='dl',
             # Assumes that this key-pair has been created in advance. If creating the key-pair for the first time,
@@ -39,5 +39,6 @@ class BasicDlComputeStack(Stack):
             self,
             "VolumeAttachment",
             instance_id=instance.instance_id,
-            volume_id=volume.attr_volume_id
+            volume_id=volume.attr_volume_id,
+            device='/dev/sdf'
         )
