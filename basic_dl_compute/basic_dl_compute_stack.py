@@ -1,19 +1,43 @@
 from aws_cdk import (
-    # Duration,
-    Stack,
-    # aws_sqs as sqs,
+    Stack
 )
 from constructs import Construct
+import aws_cdk.aws_ec2 as ec2
+
 
 class BasicDlComputeStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # The code that defines your stack goes here
+        # default VPC
+        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
 
-        # example resource
-        # queue = sqs.Queue(
-        #     self, "BasicDlComputeQueue",
-        #     visibility_timeout=Duration.seconds(300),
-        # )
+        instance = ec2.Instance(
+            self,
+            "Instance",
+            # If updating either the instance type or AMI, check the AMI documentation to verify that the AMI is
+            # compatible with the instance type
+            instance_type=ec2.InstanceType('g4dn.xlarge'),
+            machine_image=ec2.MachineImage.lookup(name='ami-0aa5328ffcf5d34ac'),
+            vpc=vpc,
+            instance_name='dl',
+            # Assumes that this key-pair has been created in advance. If creating the key-pair for the first time,
+            # be sure to save the private key pem file locally to enable SSH to the instance
+            key_name='key-pair'
+        )
+
+        volume = ec2.CfnVolume(
+            self,
+            "Volume",
+            availability_zone=instance.instance_availability_zone,
+            volume_type='gp3',
+            size=32
+        )
+
+        volume_attachment = ec2.CfnVolumeAttachment(
+            self,
+            "VolumeAttachment",
+            instance_id=instance.instance_id,
+            volume_id=volume.attr_volume_id
+        )
